@@ -65,7 +65,9 @@ static void KRApplyKeyboardMask(UIView *view) {
     }
 }
 
-static void KRApplyToViewIfKeyboardHost(UIView *view) {
+static void KRApplyToViewIfKeyboardHost(id object) {
+    UIView *view = (UIView *)object;
+    if (!view) return;
     if (!KRIsKeyboardHost(view)) return;
     KRApplyKeyboardMask(view);
 }
@@ -102,7 +104,7 @@ static void KRApplyToViewIfKeyboardHost(UIView *view) {
 
     if (!krEnabled) return;
 
-    for (UIView *subview in self.subviews) {
+    for (UIView *subview in ((UIView *)self).subviews) {
         if (KRIsKeyboardHost(subview)) {
             KRApplyKeyboardMask(subview);
         }
