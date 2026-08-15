@@ -1,0 +1,53 @@
+name: Build RootHide deb
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git curl make clang unzip perl rsync xz-utils fakeroot
+
+      - name: Install RootHide Theos
+        shell: bash
+        run: |
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/roothide/theos/master/bin/install-theos)"
+          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
+          echo "PATH=$HOME/theos/bin:$PATH" >> "$GITHUB_ENV"
+
+      - name: Verify Theos, toolchain and SDK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          echo "THEOS=$THEOS"
+          test -x "$THEOS/bin/make"
+          test -x "$THEOS/toolchain/linux/iphone/bin/clang"
+          ls -la "$THEOS/sdks"
+          test -n "$(find "$THEOS/sdks" -maxdepth 1 -type d -name '*.sdk' -print -quit)"
+          "$THEOS/toolchain/linux/iphone/bin/clang" --version
+
+      - name: Build package
+        shell: bash
+        run: |
+          set -euxo pipefail
+          make clean || true
+          make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=roothide
+          ls -lah packages/
+          test -n "$(find packages -maxdepth 1 -type f -name '*.deb' -print -quit)"
+
+      - name: Upload deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: KeyboardRounded-deb
+          path: packages/*.deb
+          if-no-files-found: error
