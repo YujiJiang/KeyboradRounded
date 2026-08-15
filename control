@@ -1,0 +1,9 @@
+Package: com.jiangyiji.keyboardrounded
+Name: KeyboardRounded
+Version: 1.2.1
+Architecture: iphoneos-arm64
+Description: Global rounded corners for the iOS keyboard.
+Maintainer: Yujijiang
+Author: Yujijiang
+Section: Tweaks
+Priority: optional
