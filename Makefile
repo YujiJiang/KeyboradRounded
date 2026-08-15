@@ -9,13 +9,13 @@ KeyboardRounded_CFLAGS = -fobjc-arc
 KeyboardRounded_FRAMEWORKS = UIKit QuartzCore
 
 BUNDLE_NAME = KeyboardRoundedPrefs
-KeyboardRoundedPrefs_FILES = KeyboardRoundedPrefs/KRRootListController.m
+KeyboardRoundedPrefs_FILES = KRRootListController.m
 KeyboardRoundedPrefs_FRAMEWORKS = UIKit
 KeyboardRoundedPrefs_PRIVATE_FRAMEWORKS = Preferences
 KeyboardRoundedPrefs_CFLAGS = -fobjc-arc
 KeyboardRoundedPrefs_INSTALL_PATH = /Library/PreferenceBundles
-KeyboardRoundedPrefs_RESOURCE_DIRS = KeyboardRoundedPrefs/Resources
-KeyboardRoundedPrefs_PLIST = KeyboardRoundedPrefs/Info.plist
+KeyboardRoundedPrefs_RESOURCE_DIRS = Resources
+KeyboardRoundedPrefs_PLIST = Info.plist
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 include $(THEOS_MAKE_PATH)/bundle.mk
