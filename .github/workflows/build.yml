@@ -3,7 +3,8 @@ name: Build RootHide deb
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
@@ -11,39 +12,67 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git curl make clang unzip perl rsync xz-utils fakeroot
+          sudo apt-get install -y \
+            build-essential \
+            fakeroot \
+            rsync \
+            curl \
+            perl \
+            zip \
+            git \
+            libxml2
 
       - name: Install RootHide Theos
-        shell: bash
-        run: |
-          bash -c "$(curl -fsSL https://raw.githubusercontent.com/roothide/theos/master/bin/install-theos)"
-          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
-          echo "PATH=$HOME/theos/bin:$PATH" >> "$GITHUB_ENV"
-
-      - name: Verify Theos, toolchain and SDK
-        shell: bash
+        env:
+          THEOS: /home/runner/theos
         run: |
           set -euxo pipefail
+
+          rm -rf "$THEOS"
+
+          bash -c "$(curl -fsSL https://raw.githubusercontent.com/roothide/theos/master/bin/install-theos)"
+
+      - name: Verify Theos
+        env:
+          THEOS: /home/runner/theos
+        run: |
+          set -euxo pipefail
+
           echo "THEOS=$THEOS"
-          test -x "$THEOS/bin/make"
+
+          command -v make
+          make --version
+
+          test -f "$THEOS/makefiles/common.mk"
+
           test -x "$THEOS/toolchain/linux/iphone/bin/clang"
-          ls -la "$THEOS/sdks"
-          test -n "$(find "$THEOS/sdks" -maxdepth 1 -type d -name '*.sdk' -print -quit)"
+
+          echo "=== Toolchain ==="
           "$THEOS/toolchain/linux/iphone/bin/clang" --version
 
+          echo "=== SDKs ==="
+          ls -la "$THEOS/sdks"
+
+          find "$THEOS/sdks" \
+            -maxdepth 1 \
+            -type d \
+            -name "*.sdk" \
+            -print
+
       - name: Build package
-        shell: bash
+        env:
+          THEOS: /home/runner/theos
+          THEOS_PACKAGE_SCHEME: roothide
         run: |
           set -euxo pipefail
-          make clean || true
-          make package FINALPACKAGE=1 THEOS_PACKAGE_SCHEME=roothide
-          ls -lah packages/
-          test -n "$(find packages -maxdepth 1 -type f -name '*.deb' -print -quit)"
+
+          make clean
+          make package FINALPACKAGE=1
 
       - name: Upload deb
         uses: actions/upload-artifact@v4
